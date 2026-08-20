@@ -1,0 +1,161 @@
+name: validate
+
+# Runs on every push, promote commits included — a generated image tag is
+# exactly what this repo exists to check before ArgoCD syncs it.
+#
+# It cannot loop. rabbit-api and rabbit-web push here with a PAT, which does
+# trigger workflows (the "GITHUB_TOKEN does not trigger workflows" rule does not
+# apply to a PAT). The loop is broken on this side instead: no job in this repo
+# pushes a commit anywhere, and loop-guard below fails the build if one ever
+# does.
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  HELM_VERSION: "v3.16.3"
+  CONFTEST_VERSION: "0.69.0"
+  KUBECONFORM_VERSION: "0.8.0"
+  GITLEAKS_VERSION: "8.30.1"
+  POLICY_REPO: nginnu/rabbit-k8s-assignment
+
+jobs:
+  guardrails:
+    name: guardrails · secrets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: install gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+      # This repo holds the values every release rewrites. A DSN or a token
+      # pasted into one is a secret in the deployment path, not just in a file.
+      - run: gitleaks git . --report-format sarif --report-path gitleaks.sarif --redact --exit-code 1
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: gitleaks.sarif
+          category: gitleaks
+
+  # The convention that keeps promote from looping, enforced rather than
+  # documented. If a workflow here ever pushes a commit, the next promote from
+  # rabbit-api triggers it, it pushes, and the two repos trade commits until
+  # someone notices the Actions bill.
+  loop-guard:
+    name: loop guard · no write-back
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: no workflow in this repo may push
+        run: |
+          if grep -rnE '^\s*(-\s*)?(run:.*)?git +push' .github/workflows/; then
+            echo "::error::a workflow in the gitops repo pushes commits — that closes the promote loop"
+            exit 1
+          fi
+          echo "no git push in .github/workflows — promote cannot loop back"
+
+  render:
+    name: render · helm
+    needs: guardrails
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Rego lives in the infra repo and is version-controlled there. Copying
+      # it here would leave two rulebooks that agree until the day they do not.
+      - name: checkout policy
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.POLICY_REPO }}
+          path: .policy-src
+          sparse-checkout: policy
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: install conftest and kubeconform
+        run: |
+          curl -sSfL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xz -C /usr/local/bin conftest
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin kubeconform
+
+      - name: helm lint
+        run: |
+          status=0
+          for chart in charts/*/; do
+            name=$(basename "$chart")
+            # _template is a library chart: it renders nothing on its own and
+            # `helm lint` on it fails for that reason, not for a defect.
+            [ "$name" = "_template" ] && continue
+            helm dependency build "$chart"
+            helm lint "$chart" || status=1
+          done
+          exit "$status"
+
+      # values.yaml is the local path — kind-loaded images, pullPolicy Never.
+      # values-ci.yaml is what CI wrote and what ArgoCD will actually sync. The
+      # second is layered on top so the policy sees the deployed state, not the
+      # laptop one.
+      - name: helm template
+        run: |
+          mkdir -p rendered
+          for chart in charts/*/; do
+            name=$(basename "$chart")
+            [ "$name" = "_template" ] && continue
+            args=(-f "${chart}values.yaml")
+            [ -f "${chart}values-ci.yaml" ] && args+=(-f "${chart}values-ci.yaml")
+            helm template "$name" "$chart" "${args[@]}" > "rendered/${name}.yaml"
+            echo "rendered ${name}"
+          done
+
+      - name: kubeconform
+        run: |
+          kubeconform -strict -summary -ignore-missing-schemas \
+            -kubernetes-version 1.31.0 \
+            rendered/
+
+      - name: opa · workload rules
+        run: conftest test --policy .policy-src/policy --namespace main rendered/
+
+      - name: opa · namespace isolation
+        run: conftest test --policy .policy-src/policy --namespace netpol --combine rendered/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rendered-manifests
+          path: rendered/
+          retention-days: 14
+
+  gate:
+    name: validate gate
+    needs: [guardrails, loop-guard, render]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}'
+          if echo '${{ toJSON(needs) }}' | grep -q '"result": *"\(failure\|cancelled\)"'; then
+            echo "::error::one or more validate jobs failed"
+            exit 1
+          fi
