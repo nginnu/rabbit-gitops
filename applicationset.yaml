@@ -8,12 +8,16 @@ spec:
   goTemplateOptions: ["missingkey=error"]
 
   generators:
+    # The charts moved into their own repo. This generator used to read them out
+    # of the infra repo under repo-gitops/, which still resolves to nothing here
+    # — an ApplicationSet whose generator matches no file creates no Application
+    # and reports no error, so the whole platform simply never syncs.
     - git:
-        repoURL: https://github.com/nginnu/rabbit-k8s-assignment.git
+        repoURL: https://github.com/nginnu/rabbit-gitops.git
         revision: main
         files:
-          - path: repo-gitops/charts/*/values.yaml
-          - path: repo-gitops/charts/_template/values.yaml
+          - path: charts/*/values.yaml
+          - path: charts/_template/values.yaml
             exclude: true
 
   template:
@@ -25,11 +29,26 @@ spec:
       project: default
 
       source:
-        repoURL: https://github.com/nginnu/rabbit-k8s-assignment.git
+        repoURL: https://github.com/nginnu/rabbit-gitops.git
         path: "{{.path.path}}"
         targetRevision: main
         helm:
           releaseName: "{{.path.basename}}"
+          # values.yaml is the local path: kind-loaded images, pullPolicy Never.
+          # values-ci.yaml is written by the api and web release workflows and
+          # carries the Docker Hub image at a git sha. Listing both, in this
+          # order, is what makes a promoted tag the one that gets synced —
+          # naming valueFiles at all replaces the implicit values.yaml, so it
+          # has to appear here too.
+          valueFiles:
+            - values.yaml
+            - values-ci.yaml
+          # platform-config renders no workload and will never have a
+          # values-ci.yaml; the service charts have none until their first
+          # release. Without this the Application sits degraded on a missing
+          # file rather than syncing what it does have.
+          # https://argo-cd.readthedocs.io/en/stable/user-guide/helm/
+          ignoreMissingValueFiles: true
 
       destination:
         server: https://kubernetes.default.svc
