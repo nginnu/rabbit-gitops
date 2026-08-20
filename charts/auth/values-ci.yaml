@@ -1,0 +1,7 @@
+# Written by hand. The next release overwrites this file.
+services:
+  auth:
+    image:
+      repository: nginnu/rabbit-auth
+      tag: 0feb6cb
+      pullPolicy: IfNotPresent

@@ -1,0 +1,7 @@
+# Written by hand. The next release overwrites this file.
+services:
+  order:
+    image:
+      repository: nginnu/rabbit-order
+      tag: 0feb6cb
+      pullPolicy: IfNotPresent

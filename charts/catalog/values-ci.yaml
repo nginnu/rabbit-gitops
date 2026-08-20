@@ -1,0 +1,7 @@
+# Written by hand. The next release overwrites this file.
+services:
+  catalog:
+    image:
+      repository: nginnu/rabbit-catalog
+      tag: 0feb6cb
+      pullPolicy: IfNotPresent
