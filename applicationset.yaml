@@ -16,9 +16,16 @@ spec:
         repoURL: https://github.com/nginnu/rabbit-gitops.git
         revision: main
         files:
-          - path: charts/*/values.yaml
-          - path: charts/_template/values.yaml
-            exclude: true
+          # Scoped to web-ui while ArgoCD takes over a cluster that make up
+          # already filled with Helm releases. The wildcard is the end state;
+          # switching it on now would hand ArgoCD six releases it does not own
+          # at once, and a sync conflict on any one of them would be
+          # indistinguishable from a sync conflict on the others.
+          #
+          #   end state:  - path: charts/*/values.yaml
+          #               - path: charts/_template/values.yaml
+          #                 exclude: true
+          - path: charts/web-ui/values.yaml
 
   template:
     metadata:
