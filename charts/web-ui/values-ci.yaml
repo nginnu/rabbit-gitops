@@ -1,0 +1,8 @@
+# Written by nginnu/rabbit-web@43f8cf87525d3b7306dff2b8d5bb22e381160c0a.
+# Generated — the next release overwrites this file.
+services:
+  web-ui:
+    image:
+      repository: nginnu/rabbit-web-ui
+      tag: 43f8cf8
+      pullPolicy: IfNotPresent
