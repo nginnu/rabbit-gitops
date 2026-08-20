@@ -16,7 +16,13 @@ spec:
     - {{ . }}
     {{- end }}
   parentRefs:
-    - name: {{ $svc.route.gateway | default "external" }}
+    # group and kind are defaulted by the API server, so a route written
+    # without them comes back with them and ArgoCD reads the difference as
+    # drift — the Application sits OutOfSync forever while every object it
+    # manages is already correct.
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $svc.route.gateway | default "external" }}
       namespace: {{ $svc.route.gatewayNamespace | default "gateway" }}
       {{- with $svc.route.section }}
       sectionName: {{ . }}
@@ -32,8 +38,13 @@ spec:
             path: { type: ReplacePrefixMatch, replacePrefixMatch: {{ . }} }
       {{- end }}
       backendRefs:
-        - name: {{ $name }}
+        # Same reason as parentRefs above: group "" (core), kind Service and
+        # weight 1 are all filled in on admission.
+        - group: ""
+          kind: Service
+          name: {{ $name }}
           port: 80
+          weight: 1
     {{- end }}
 {{- end }}
 {{- end }}
