@@ -1,0 +1,32 @@
+# Kubernetes
+*.pem
+*.key
+kubeconfig*
+secrets/
+.kube/
+
+# Helm
+Chart.lock
+charts/*/charts/
+charts/*/Chart.lock
+
+# Secrets & Config
+.env
+.env.local
+*.secret
+.kubeconfig
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.backup
