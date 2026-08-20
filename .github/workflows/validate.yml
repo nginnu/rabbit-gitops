@@ -34,7 +34,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - name: install gitleaks
@@ -44,7 +44,7 @@ jobs:
       # This repo holds the values every release rewrites. A DSN or a token
       # pasted into one is a secret in the deployment path, not just in a file.
       - run: gitleaks git . --report-format sarif --report-path gitleaks.sarif --redact --exit-code 1
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324 # v3
         if: always()
         with:
           sarif_file: gitleaks.sarif
@@ -60,7 +60,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: no workflow in this repo may push
         run: |
           if grep -rnE '^\s*(-\s*)?(run:.*)?git +push' .github/workflows/; then
@@ -76,18 +76,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # The Rego lives in the infra repo and is version-controlled there. Copying
       # it here would leave two rulebooks that agree until the day they do not.
       - name: checkout policy
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: ${{ env.POLICY_REPO }}
           path: .policy-src
           sparse-checkout: policy
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
         with:
           version: ${{ env.HELM_VERSION }}
 
@@ -139,7 +139,7 @@ jobs:
       - name: opa · namespace isolation
         run: conftest test --policy .policy-src/policy --namespace netpol --combine rendered/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: rendered-manifests
