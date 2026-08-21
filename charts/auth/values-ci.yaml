@@ -1,8 +1,8 @@
-# Written by nginnu/rabbit-api@763bfa7d9f00ee9beb792c7f0fdfc5e2f69026d0.
+# Written by nginnu/rabbit-api@978c403612e010cd72e65c5c5e33eec99255bc25.
 # Generated — the next release overwrites this file.
 services:
   auth:
     image:
       repository: nginnu/rabbit-auth
-      tag: "763bfa7"
+      tag: "978c403"
       pullPolicy: IfNotPresent
