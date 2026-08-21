@@ -48,11 +48,14 @@ services:
     # so it cannot check whether a username maps to root, and refuses to start
     # the container. 65532 is the nonroot uid in distroless.
     uid: 65532
-    # No startup delay — notification is ready immediately. The library defaults
-    # are for services that need time to start, so set these explicitly.
+    # The same two lines the other four services carry. /readyz is gone from
+    # main.go: it answered exactly what /healthz answered, and it was the one
+    # probe path Alloy's drop_healthz filter does not match — with 5 replicas
+    # checked every 5s, notification was the only service feeding Tempo ~60
+    # probe spans a minute while /notify fires once per checkout.
     probes:
-      liveness:  { path: /healthz, initialDelaySeconds: 0, periodSeconds: 10 }
-      readiness: { path: /readyz,  initialDelaySeconds: 0, periodSeconds: 5 }
+      liveness:  { path: /healthz, initialDelaySeconds: 10, periodSeconds: 15 }
+      readiness: { path: /healthz, initialDelaySeconds: 5,  periodSeconds: 5 }
     resources:
       requests: { cpu: 20m,  memory: 32Mi }
       limits:   { cpu: 200m, memory: 128Mi }
