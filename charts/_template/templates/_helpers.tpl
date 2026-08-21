@@ -40,9 +40,17 @@ app.kubernetes.io/name: {{ .svc.name }}
 
 {{/*
 The full image reference: repository:tag. `svc` carries the image block.
+
+A tag of all digits — a git sha like 1532430, roughly one push in
+twenty-seven — is read by YAML as a number, and Go prints that back as
+1.53243e+06. The pod then fails with InvalidImageName. toString does not help:
+by then the value is already a float64.
 */}}
 {{- define "platform-service.image" -}}
-{{ .svc.image.repository }}:{{ .svc.image.tag | default .root.Chart.AppVersion }}
+{{- $tag := .svc.image.tag | default .root.Chart.AppVersion -}}
+{{- if kindIs "float64" $tag -}}{{- $tag = printf "%.0f" $tag -}}{{- end -}}
+{{- if kindIs "int64" $tag -}}{{- $tag = printf "%d" $tag -}}{{- end -}}
+{{ .svc.image.repository }}:{{ $tag }}
 {{- end -}}
 
 {{/*
