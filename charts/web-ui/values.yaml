@@ -54,6 +54,11 @@ services:
     topologySpread: true
     pdb: { minAvailable: 1 }
 
+    # The BFF is the only caller auth, catalog and order allow, so meshing it is
+    # what lets those three move to STRICT. Traefik still reaches this pod in
+    # plaintext, so web-ui itself stays PERMISSIVE.
+    mesh: true  # adds netpol istiod (egress) + alloy-scrape:15020 (ingress)
+
     networkPolicy: true
     networkPolicyPeers:
       # Cross-namespace, and unchanged by the web/api split: the gateway peer
