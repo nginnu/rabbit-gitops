@@ -12,6 +12,7 @@ service and belongs to the platform-config release, which syncs ahead of these
 (wave 10 vs 20). Rendering it from each service would have six releases
 fighting over the same object on every sync.
 */}}
+{{ include "platform-service.serviceaccount" . }}
 {{ include "platform-service.deployment-rollout" . }}
 {{ include "platform-service.service" . }}
 {{ include "platform-service.httproute" . }}

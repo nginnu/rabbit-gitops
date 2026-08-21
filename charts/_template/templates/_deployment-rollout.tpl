@@ -57,6 +57,7 @@ spec:
         sidecar.istio.io/inject: "true"
         {{- end }}
     spec:
+      serviceAccountName: {{ $svc.serviceAccount | default $name }}
       {{- if $svc.topologySpread }}
       topologySpreadConstraints:
         - maxSkew: 1

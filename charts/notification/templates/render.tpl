@@ -7,6 +7,7 @@ chart: the differences between services belong in values.yaml, never here. If
 this file ever needs to differ per service, the library is missing a knob and
 that is where the fix goes.
 */}}
+{{ include "platform-service.serviceaccount" . }}
 {{ include "platform-service.deployment-rollout" . }}
 {{ include "platform-service.service" . }}
 {{ include "platform-service.httproute" . }}
