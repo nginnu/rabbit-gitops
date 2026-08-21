@@ -1,8 +1,8 @@
-# Written by nginnu/rabbit-api@978c403612e010cd72e65c5c5e33eec99255bc25.
+# Written by nginnu/rabbit-api@c9fc3774a6c3d5c4afc5b8a8ba21665cdc93f26d.
 # Generated — the next release overwrites this file.
 services:
   notification:
     image:
       repository: nginnu/rabbit-notification
-      tag: "978c403"
+      tag: "c9fc377"
       pullPolicy: IfNotPresent
