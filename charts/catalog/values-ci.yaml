@@ -1,8 +1,8 @@
-# Written by nginnu/rabbit-api@153243056dca8d1773c7a2c08c348cf1ab68f1e8.
+# Written by nginnu/rabbit-api@e1405001d1a29086abf8364a4615c8bbdcb97fc7.
 # Generated — the next release overwrites this file.
 services:
   catalog:
     image:
       repository: nginnu/rabbit-catalog
-      tag: "1532430"
+      tag: "e140500"
       pullPolicy: IfNotPresent
