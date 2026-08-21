@@ -4,5 +4,5 @@ services:
   notification:
     image:
       repository: nginnu/rabbit-notification
-      tag: 1532430
+      tag: "1532430"
       pullPolicy: IfNotPresent

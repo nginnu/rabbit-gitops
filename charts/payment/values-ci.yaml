@@ -4,5 +4,5 @@ services:
   payment:
     image:
       repository: nginnu/rabbit-payment
-      tag: 1532430
+      tag: "1532430"
       pullPolicy: IfNotPresent

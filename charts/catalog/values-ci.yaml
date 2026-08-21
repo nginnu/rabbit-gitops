@@ -4,5 +4,5 @@ services:
   catalog:
     image:
       repository: nginnu/rabbit-catalog
-      tag: 1532430
+      tag: "1532430"
       pullPolicy: IfNotPresent

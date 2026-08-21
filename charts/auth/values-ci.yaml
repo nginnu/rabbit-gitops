@@ -4,5 +4,5 @@ services:
   auth:
     image:
       repository: nginnu/rabbit-auth
-      tag: 1532430
+      tag: "1532430"
       pullPolicy: IfNotPresent
