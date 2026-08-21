@@ -1,7 +1,8 @@
-# Written by hand. The next release overwrites this file.
+# Written by nginnu/rabbit-api@153243056dca8d1773c7a2c08c348cf1ab68f1e8.
+# Generated — the next release overwrites this file.
 services:
   payment:
     image:
       repository: nginnu/rabbit-payment
-      tag: 0feb6cb
+      tag: 1532430
       pullPolicy: IfNotPresent
