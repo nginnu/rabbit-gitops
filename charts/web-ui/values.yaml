@@ -47,7 +47,7 @@ services:
       - { name: CATALOG_URL, value: "http://catalog.api.svc.cluster.local" }
       - { name: ORDER_URL, value: "http://order.api.svc.cluster.local" }
     route:
-      hostnames: [localhost]
+      hostnames: [web.localhost]
       rules:
         - path: /
 
