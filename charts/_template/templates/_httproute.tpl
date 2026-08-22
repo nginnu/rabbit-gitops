@@ -40,11 +40,20 @@ spec:
       backendRefs:
         # Same reason as parentRefs above: group "" (core), kind Service and
         # weight 1 are all filled in on admission.
+        {{- if and (eq $svc.workloadKind "Rollout") $svc.rollout.trafficRouting }}
+        - group: ""
+          kind: Service
+          name: istio-ingressgateway
+          namespace: istio-system
+          port: 80
+          weight: 1
+        {{- else }}
         - group: ""
           kind: Service
           name: {{ $name }}
           port: 80
           weight: 1
+        {{- end }}
     {{- end }}
 {{- end }}
 {{- end }}

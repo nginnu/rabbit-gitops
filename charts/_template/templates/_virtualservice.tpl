@@ -36,8 +36,14 @@ metadata:
   labels:
     {{- include "platform-service.labels" $lbls | nindent 4 }}
 spec:
+  gateways:
+    - mesh
+    - istio-system/mesh
   hosts:
     - {{ printf "%s.%s.svc.cluster.local" $name (include "platform-service.namespace" $) }}
+    {{- range $host := ($svc.route.hostnames | default list) }}
+    - {{ $host }}
+    {{- end }}
   http:
     {{- range $route := $vs.routes }}
     - name: {{ $route }}

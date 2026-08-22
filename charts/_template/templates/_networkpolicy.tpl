@@ -49,6 +49,14 @@ traefik namespace is created by helm --create-namespace, which labels nothing.
     podSelector:
       matchLabels:
         app.kubernetes.io/name: traefik
+{{- else if eq $peer "mesh-gateway" }}
+- from_or_to:
+  - namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: istio-system
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: istio-ingressgateway
 {{- else if eq $peer "dns" }}
 - from_or_to:
   - namespaceSelector:
@@ -154,7 +162,7 @@ traefik namespace is created by helm --create-namespace, which labels nothing.
         app.kubernetes.io/name: {{ $target }}
 {{- end }}
 {{- else }}
-{{- fail (printf "networkPolicy: unknown peer %q on a service in namespace %s — use gateway, dns, istiod, alloy, alloy-scrape, mariadb, redis, svc:<name>, or svc:<namespace>/<name>" $peer $ns) }}
+{{- fail (printf "networkPolicy: unknown peer %q on a service in namespace %s — use gateway, mesh-gateway, dns, istiod, alloy, alloy-scrape, mariadb, redis, svc:<name>, or svc:<namespace>/<name>" $peer $ns) }}
 {{- end }}
 {{- end -}}
 

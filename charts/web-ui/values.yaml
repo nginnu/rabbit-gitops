@@ -63,7 +63,7 @@ services:
     networkPolicyPeers:
       # Cross-namespace, and unchanged by the web/api split: the gateway peer
       # carries its own namespaceSelector for traefik.
-      ingress: [gateway]
+      ingress: [gateway, mesh-gateway]
       # The BFF calls auth, catalog and order in-cluster from the web
       # namespace, so every backend peer crosses into api — svc:<ns>/<name>
       # carries a namespaceSelector, where a bare svc:<name> would render a
