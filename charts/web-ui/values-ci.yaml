@@ -4,5 +4,5 @@ services:
   web-ui:
     image:
       repository: nginnu/rabbit-web-ui
-      tag: "e6e9066"
+      tag: "4e9f872"
       pullPolicy: IfNotPresent
