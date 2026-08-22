@@ -25,7 +25,6 @@ from fighting over the object mid-rollout.
 {{- if and (eq $svc.workloadKind "Rollout") $svc.rollout.trafficRouting }}
 {{- $lbls := dict "svc" (set $svc "name" $name) "root" $ -}}
 {{- $stable := $svc.rollout.stableService | default $name -}}
-{{- $canary := $svc.rollout.canaryService | default (printf "%s-canary" $name) -}}
 {{- range $vs := $svc.rollout.trafficRouting.istio.virtualServices }}
 ---
 apiVersion: networking.istio.io/v1
@@ -50,11 +49,13 @@ spec:
       route:
         - destination:
             host: {{ $stable }}
+            subset: {{ $svc.rollout.trafficRouting.istio.destinationRule.stableSubsetName | default "stable" }}
             port:
               number: 80
           weight: 100
         - destination:
-            host: {{ $canary }}
+            host: {{ $stable }}
+            subset: {{ $svc.rollout.trafficRouting.istio.destinationRule.canarySubsetName | default "canary" }}
             port:
               number: 80
           weight: 0

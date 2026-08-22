@@ -86,6 +86,10 @@ services:
             - name: web-ui
               routes:
                 - primary
+          destinationRule:
+            name: web-ui
+            canarySubsetName: canary
+            stableSubsetName: stable
       strategy:
         canary:
           steps:
