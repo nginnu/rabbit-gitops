@@ -70,7 +70,7 @@ spec:
         - group: ""
           kind: Service
           jsonPointers:
-            - /spec/selector/pod-template-hash
+            - /spec/selector/rollouts-pod-template-hash
         - group: networking.istio.io
           kind: VirtualService
           jsonPointers:
