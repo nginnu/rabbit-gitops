@@ -74,6 +74,11 @@ spec:
           ports:
             - name: http
               containerPort: {{ $svc.port }}
+              # Stated, not left to the API server: inside a CRD ArgoCD sees
+              # the pod template as an opaque map, so a defaulted protocol:
+              # TCP the chart never wrote reads as drift and the Application
+              # sits OutOfSync forever while the object is already correct.
+              protocol: TCP
           {{- with $.Values.sharedConfig }}
           envFrom:
             - configMapRef:
