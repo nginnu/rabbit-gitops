@@ -63,15 +63,19 @@ spec:
       # weights on every setWeight step. Both are the controller's to move
       # mid-rollout — without this, selfHeal reads them as drift and reverts
       # them, and the Application flaps OutOfSync for the whole canary.
+      # jsonPointers, not jqPathExpressions: this ArgoCD's jq parser rejects
+      # [*], and the chart renders exactly one http route with exactly two
+      # destinations, so the indices are fixed.
       ignoreDifferences:
         - group: ""
           kind: Service
-          jqPathExpressions:
-            - '.spec.selector."pod-template-hash"'
+          jsonPointers:
+            - /spec/selector/pod-template-hash
         - group: networking.istio.io
           kind: VirtualService
-          jqPathExpressions:
-            - '.spec.http[*].route[*].weight'
+          jsonPointers:
+            - /spec/http/0/route/0/weight
+            - /spec/http/0/route/1/weight
 
       syncPolicy:
         automated:
