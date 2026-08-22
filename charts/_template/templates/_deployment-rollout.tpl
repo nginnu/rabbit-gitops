@@ -120,12 +120,31 @@ spec:
           securityContext:
             {{- include "platform-service.securityContext" (dict "svc" $svc) | nindent 12 }}
   {{- if eq $svc.workloadKind "Rollout" }}
-  strategy:
-    {{- toYaml $svc.rollout.strategy | nindent 4 }}
+  {{/*
+    trafficRouting, stableService and canaryService are fields of the canary
+    strategy, not of the Rollout itself: the CRD declares them under
+    spec.strategy.canary, and a field rendered anywhere else is rejected by
+    schema validation before the object ever reaches the cluster — ArgoCD's
+    ServerSideApply dies constructing the patch, exactly the "field not
+    declared in schema" failure. Values keep them under `rollout:` next to
+    `strategy` — flat and readable — so they are grafted into the canary map
+    here, on a deepCopy so rendering never mutates the values tree the other
+    templates still read.
+
+    stableService defaults to the service's own name, canaryService to
+    <name>-canary: the pair _service.tpl renders when trafficRouting is on.
+    Without both, the Rollout controller refuses to route at all.
+  */}}
+  {{- $strategy := $svc.rollout.strategy -}}
   {{- if $svc.rollout.trafficRouting }}
-  trafficRouting:
-    {{- toYaml $svc.rollout.trafficRouting | nindent 4 }}
+  {{- $canary := deepCopy ($strategy.canary | default dict) -}}
+  {{- $_ := set $canary "trafficRouting" $svc.rollout.trafficRouting -}}
+  {{- $_ := set $canary "stableService" ($svc.rollout.stableService | default $name) -}}
+  {{- $_ := set $canary "canaryService" ($svc.rollout.canaryService | default (printf "%s-canary" $name)) -}}
+  {{- $strategy = dict "canary" $canary -}}
   {{- end }}
+  strategy:
+    {{- toYaml $strategy | nindent 4 }}
   {{- end }}
 {{- end }}
 {{- end -}}

@@ -71,11 +71,21 @@ services:
       egress: [svc:api/auth, svc:api/catalog, svc:api/order]
 
     rollout:
+      # Traffic splitting runs between two Services: web-ui stays the stable
+      # one — the HTTPRoute keeps pointing at it — and the chart renders a
+      # web-ui-canary twin. The controller pins pod-template-hash onto both
+      # and shifts the VirtualService weights between them.
+      stableService: web-ui
+      canaryService: web-ui-canary
       trafficRouting:
         istio:
           virtualServices:
+            # No namespace key here: the CRD takes name and routes only —
+            # the VirtualService must already sit in the Rollout's own
+            # namespace (web), which it does.
             - name: web-ui
-              namespace: web
+              routes:
+                - primary
       strategy:
         canary:
           steps:
