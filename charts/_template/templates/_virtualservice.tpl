@@ -26,6 +26,7 @@ from fighting over the object mid-rollout.
 {{- $lbls := dict "svc" (set $svc "name" $name) "root" $ -}}
 {{- $stable := $svc.rollout.stableService | default $name -}}
 {{- range $vs := $svc.rollout.trafficRouting.istio.virtualServices }}
+{{- $isCatchAll := and $svc.rollout.catchAllHost (hasSuffix "-catchall" $vs.name) }}
 ---
 apiVersion: networking.istio.io/v1
 kind: VirtualService
@@ -43,12 +44,13 @@ spec:
     - istio-system/mesh
     {{- end }}
   hosts:
+    {{- if $isCatchAll }}
+    - "*"
+    {{- else }}
     - {{ printf "%s.%s.svc.cluster.local" $name (include "platform-service.namespace" $) }}
     {{- range $host := ($svc.route.hostnames | default list) }}
     - {{ $host }}
     {{- end }}
-    {{- if $svc.rollout.catchAllHost }}
-    - "*"
     {{- end }}
   http:
     {{- range $route := $vs.routes }}

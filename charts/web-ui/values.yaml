@@ -81,10 +81,10 @@ services:
       trafficRouting:
         istio:
           virtualServices:
-            # No namespace key here: the CRD takes name and routes only —
-            # the VirtualService must already sit in the Rollout's own
-            # namespace (web), which it does.
             - name: web-ui
+              routes:
+                - primary
+            - name: web-ui-catchall
               routes:
                 - primary
           destinationRule:
