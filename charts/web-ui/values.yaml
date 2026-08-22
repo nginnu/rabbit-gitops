@@ -47,7 +47,7 @@ services:
       - { name: CATALOG_URL, value: "http://catalog.api.svc.cluster.local" }
       - { name: ORDER_URL, value: "http://order.api.svc.cluster.local" }
     route:
-      hostnames: [web.localhost]
+      hostnames: [localhost, web.localhost]
       rules:
         - path: /
 
@@ -71,6 +71,7 @@ services:
       egress: [svc:api/auth, svc:api/catalog, svc:api/order]
 
     rollout:
+      catchAllHost: true
       # Traffic splitting runs between two Services: web-ui stays the stable
       # one — the HTTPRoute keeps pointing at it — and the chart renders a
       # web-ui-canary twin. The controller pins pod-template-hash onto both
