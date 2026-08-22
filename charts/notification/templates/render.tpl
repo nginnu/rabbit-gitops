@@ -12,5 +12,6 @@ that is where the fix goes.
 {{ include "platform-service.service" . }}
 {{ include "platform-service.httproute" . }}
 {{ include "platform-service.virtualservice" . }}
+{{ include "platform-service.destinationrule" . }}
 {{ include "platform-service.pdb" . }}
 {{ include "platform-service.networkpolicy" . }}
