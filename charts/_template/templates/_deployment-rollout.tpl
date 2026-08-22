@@ -122,6 +122,10 @@ spec:
   {{- if eq $svc.workloadKind "Rollout" }}
   strategy:
     {{- toYaml $svc.rollout.strategy | nindent 4 }}
+  {{- if $svc.rollout.trafficRouting }}
+  trafficRouting:
+    {{- toYaml $svc.rollout.trafficRouting | nindent 4 }}
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end -}}

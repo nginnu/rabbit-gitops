@@ -16,7 +16,7 @@ services:
       pullPolicy: Never
     port: 3000
     replicas: 2
-    workloadKind: Deployment
+    workloadKind: Rollout
     # 1001, not the 10001 the Go services use: web-ui's Dockerfile creates the
     # nextjs user with --uid 1001, and a runAsUser the image has no account for
     # leaves the pod unable to start.
@@ -69,3 +69,17 @@ services:
       # carries a namespaceSelector, where a bare svc:<name> would render a
       # podSelector scoped to web and match nothing.
       egress: [svc:api/auth, svc:api/catalog, svc:api/order]
+
+    rollout:
+      trafficRouting:
+        istio:
+          virtualServices:
+            - name: web-ui
+              namespace: web
+      strategy:
+        canary:
+          steps:
+            - setWeight: 10
+            - pause: {}
+            - setWeight: 50
+            - pause: {}
