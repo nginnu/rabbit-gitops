@@ -16,6 +16,7 @@ fighting over the same object on every sync.
 {{ include "platform-service.deployment-rollout" . }}
 {{ include "platform-service.service" . }}
 {{ include "platform-service.httproute" . }}
+{{ include "platform-service.virtualservice" . }}
 {{ include "platform-service.pdb" . }}
 {{ include "platform-service.networkpolicy" . }}
 {{ include "platform-service.analysistemplate" . }}

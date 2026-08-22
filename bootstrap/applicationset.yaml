@@ -58,6 +58,21 @@ spec:
         server: https://kubernetes.default.svc
         namespace: "{{.namespace}}"
 
+      # argo-rollouts owns two fields at runtime: it pins pod-template-hash
+      # onto the stable/canary Service pair, and it rewrites VirtualService
+      # weights on every setWeight step. Both are the controller's to move
+      # mid-rollout — without this, selfHeal reads them as drift and reverts
+      # them, and the Application flaps OutOfSync for the whole canary.
+      ignoreDifferences:
+        - group: ""
+          kind: Service
+          jqPathExpressions:
+            - '.spec.selector."pod-template-hash"'
+        - group: networking.istio.io
+          kind: VirtualService
+          jqPathExpressions:
+            - '.spec.http[*].route[*].weight'
+
       syncPolicy:
         automated:
           prune: true
